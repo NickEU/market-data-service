@@ -10,7 +10,6 @@ import { IUserController } from './users.controller.interface';
 export class UserController extends BaseController implements IUserController {
 	constructor(@inject(TYPES.ILogger) logger: ILogger) {
 		super(logger);
-		console.dir(this);
 		this.bindRoutes([
 			{ path: '/login', func: this.login, method: 'post' },
 			{ path: '/register', func: this.register, method: 'post' },

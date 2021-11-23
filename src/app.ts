@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import express, { Express } from 'express';
 import { Server } from 'http';
-import { ExceptionFilter } from './errors/exception.filter.js';
-import { ILogger } from './logger/logger.interface.js';
+import { ExceptionFilter } from './errors/exception.filter';
+import { ILogger } from './logger/logger.interface';
 import { injectable, inject } from 'inversify';
 import { TYPES } from './types';
 import { IUserController } from './users/users.controller.interface';
