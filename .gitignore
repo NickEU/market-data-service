@@ -1,5 +1,7 @@
-#custom
-dist/
+#typescript build dir
+/dist
+#clinic reports
+/.clinic
 
 # Logs
 logs

@@ -11,7 +11,7 @@
     "build": "tsc.cmd",
     "lint": "eslint ./src/**",
     "lint:fix": "eslint ./src/** --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "clinic doctor --on-port 'autocannon -m POST localhost:8000/users/register' -- node dist/main.js"
   },
   "author": "Nick Knock",
   "license": "ISC",
