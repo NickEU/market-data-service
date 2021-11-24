@@ -7,6 +7,7 @@ import { ILogger } from '../logger/logger.interface';
 import { IUserController } from './users.controller.interface';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
+import { IUserService } from './users.service.interface';
 // import fs from 'fs';
 // import { resolve } from 'path';
 
@@ -14,7 +15,10 @@ import { UserRegisterDto } from './dto/user-register.dto';
 
 @injectable()
 export class UserController extends BaseController implements IUserController {
-	constructor(@inject(TYPES.ILogger) logger: ILogger) {
+	constructor(
+		@inject(TYPES.ILogger) logger: ILogger,
+		@inject(TYPES.IUserService) private _userService: IUserService,
+	) {
 		super(logger);
 		this.bindRoutes([
 			{ path: '/login', func: this.login, method: 'post' },
@@ -22,14 +26,21 @@ export class UserController extends BaseController implements IUserController {
 		]);
 	}
 
-	register(req: Request<{}, {}, UserRegisterDto>, res: Response, _next: NextFunction): void {
-		console.log(req.body);
-		// data.push(fs.readFileSync(resolve(__dirname, '../../unlock.zip')));
-		this.ok(res, 'Registration successful');
+	async register(
+		{ body }: Request<{}, {}, UserRegisterDto>,
+		res: Response,
+		_next: NextFunction,
+	): Promise<void> {
+		// routing and interaction with incoming and outgoing data
+		const result = await this._userService.createUser(body);
+		if (!result) {
+			return _next(new HTTPError(422, 'A user with this email already exists'));
+		}
+		this.ok(res, { email: result.email });
 	}
 
-	login(req: Request<{}, {}, UserLoginDto>, res: Response, next: NextFunction): void {
-		console.log(req.body);
+	login({ body }: Request<{}, {}, UserLoginDto>, res: Response, next: NextFunction): void {
+		console.log(body);
 		next(new HTTPError(401, 'Authorization error!', 'login'));
 	}
 }
