@@ -21,6 +21,7 @@ export class UserController extends BaseController implements IUserController {
 	}
 
 	login(_req: Request, _res: Response, next: NextFunction): void {
+		console.log('Debug test.');
 		next(new HTTPError(401, 'Authorization error!', 'login'));
 	}
 }
