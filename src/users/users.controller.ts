@@ -7,7 +7,7 @@ import { ILogger } from '../logger/logger.interface';
 import { IUserController } from './users.controller.interface';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
-import { User } from './user.entity';
+import { IUserService } from './users.service.interface';
 // import fs from 'fs';
 // import { resolve } from 'path';
 
@@ -15,7 +15,10 @@ import { User } from './user.entity';
 
 @injectable()
 export class UserController extends BaseController implements IUserController {
-	constructor(@inject(TYPES.ILogger) logger: ILogger) {
+	constructor(
+		@inject(TYPES.ILogger) logger: ILogger,
+		@inject(TYPES.IUserService) private _userService: IUserService,
+	) {
 		super(logger);
 		this.bindRoutes([
 			{ path: '/login', func: this.login, method: 'post' },
@@ -28,11 +31,12 @@ export class UserController extends BaseController implements IUserController {
 		res: Response,
 		_next: NextFunction,
 	): Promise<void> {
-		console.log(body);
-		const newUser = new User(body.email, body.name);
-		await newUser.setPassword(body.password);
-		// data.push(fs.readFileSync(resolve(__dirname, '../../unlock.zip')));
-		this.ok(res, newUser);
+		// routing and interaction with incoming and outgoing data
+		const result = await this._userService.createUser(body);
+		if (!result) {
+			return _next(new HTTPError(422, 'A user with this email already exists'));
+		}
+		this.ok(res, { email: result.email });
 	}
 
 	login({ body }: Request<{}, {}, UserLoginDto>, res: Response, next: NextFunction): void {
