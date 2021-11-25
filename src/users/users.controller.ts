@@ -9,12 +9,16 @@ import { UserLoginDto } from './dto/user-login.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
 import { IUserService } from './users.service.interface';
 import { ValidateMiddleware } from '../common/validate.middleware';
+import { sign } from 'jsonwebtoken';
+import { IConfigService } from '../config/config.service.interface';
+import { CONSTANTS } from '../common/constants';
 
 @injectable()
 export class UserController extends BaseController implements IUserController {
 	constructor(
 		@inject(TYPES.ILogger) logger: ILogger,
 		@inject(TYPES.IUserService) private _userService: IUserService,
+		@inject(TYPES.IConfigService) private _configService: IConfigService,
 	) {
 		super(logger);
 		this.bindRoutes([
@@ -53,9 +57,32 @@ export class UserController extends BaseController implements IUserController {
 	): Promise<void> {
 		const loginSuccessful = await this._userService.validateUser(body);
 		if (loginSuccessful) {
-			this.ok(res, 'Login successful!');
+			const secret = this._configService.get(CONSTANTS.SECRET);
+			const jwt = await this.signJWT(body.email, secret);
+			this.ok(res, { jwt });
 		} else {
 			next(new HTTPError(401, 'Invalid username or password!', 'Login'));
 		}
+	}
+
+	private signJWT(email: string, secret: string): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			sign(
+				{
+					email,
+					iat: Math.floor(Date.now() / 1000),
+				},
+				secret,
+				{
+					algorithm: 'HS256',
+				},
+				(err, token) => {
+					if (err) {
+						reject(err);
+					}
+					resolve(token as string);
+				},
+			);
+		});
 	}
 }
