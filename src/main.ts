@@ -9,13 +9,16 @@ import { IExceptionFilter } from './errors/exception.filter.interface';
 import { IUserController } from './users/users.controller.interface';
 import { IUserService } from './users/users.service.interface';
 import { UserService } from './users/users.service';
+import { ConfigService } from './config/config.service';
+import { IConfigService } from './config/config.service.interface';
 
 export const appBindings = new ContainerModule((bind: interfaces.Bind) => {
-	bind<ILogger>(TYPES.ILogger).to(LoggerService);
-	bind<IExceptionFilter>(TYPES.IExceptionFilter).to(ExceptionFilter);
-	bind<IUserController>(TYPES.IUserController).to(UserController);
-	bind<IUserService>(TYPES.IUserService).to(UserService);
-	bind<App>(TYPES.Application).to(App);
+	bind<ILogger>(TYPES.ILogger).to(LoggerService).inSingletonScope();
+	bind<IExceptionFilter>(TYPES.IExceptionFilter).to(ExceptionFilter).inSingletonScope();
+	bind<IUserController>(TYPES.IUserController).to(UserController).inSingletonScope();
+	bind<IConfigService>(TYPES.IConfigService).to(ConfigService).inSingletonScope();
+	bind<IUserService>(TYPES.IUserService).to(UserService).inSingletonScope();
+	bind<App>(TYPES.Application).to(App).inSingletonScope();
 });
 
 export interface BootstrapReturn {
