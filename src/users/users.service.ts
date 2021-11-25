@@ -45,4 +45,8 @@ export class UserService implements IUserService {
 		const passwordMatches = User.isValidPassword(potentialPwd, hash);
 		return passwordMatches;
 	}
+
+	async getUserInfo(email: string): Promise<UserModel | null> {
+		return this.usersRepo.find(email);
+	}
 }
