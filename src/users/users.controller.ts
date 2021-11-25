@@ -36,7 +36,7 @@ export class UserController extends BaseController implements IUserController {
 		// routing and interaction with incoming and outgoing data
 		const result = await this._userService.createUser(body);
 		if (!result) {
-			return _next(new HTTPError(422, 'A user with this email already exists'));
+			return _next(new HTTPError(422, 'A user with this email already exists', 'UsersController'));
 		}
 		this.ok(res, { email: result.email, name: result.name });
 	}
