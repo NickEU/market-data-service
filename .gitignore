@@ -1,7 +1,12 @@
 #typescript build dir
 /dist
+
 #clinic reports
 /.clinic
+
+#prisma
+/prisma/dev.db
+/prisma/dev.db-journal
 
 # Logs
 logs
