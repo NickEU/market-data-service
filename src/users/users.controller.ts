@@ -18,7 +18,12 @@ export class UserController extends BaseController implements IUserController {
 	) {
 		super(logger);
 		this.bindRoutes([
-			{ path: '/login', func: this.login, method: 'post' },
+			{
+				path: '/login',
+				func: this.login,
+				method: 'post',
+				middlewares: [new ValidateMiddleware(UserLoginDto)],
+			},
 			{
 				path: '/register',
 				func: this.register,
@@ -41,8 +46,16 @@ export class UserController extends BaseController implements IUserController {
 		this.ok(res, { email: result.email, name: result.name });
 	}
 
-	login({ body }: Request<{}, {}, UserLoginDto>, res: Response, next: NextFunction): void {
-		console.log(body);
-		next(new HTTPError(401, 'Authorization error!', 'login'));
+	async login(
+		{ body }: Request<{}, {}, UserLoginDto>,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		const loginSuccessful = await this._userService.validateUser(body);
+		if (loginSuccessful) {
+			this.ok(res, 'Login successful!');
+		} else {
+			next(new HTTPError(401, 'Invalid username or password!', 'Login'));
+		}
 	}
 }
