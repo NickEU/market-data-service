@@ -8,10 +8,7 @@ import { IUserController } from './users.controller.interface';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
 import { IUserService } from './users.service.interface';
-// import fs from 'fs';
-// import { resolve } from 'path';
-
-// const data = [];
+import { ValidateMiddleware } from '../common/validate.middleware';
 
 @injectable()
 export class UserController extends BaseController implements IUserController {
@@ -22,7 +19,12 @@ export class UserController extends BaseController implements IUserController {
 		super(logger);
 		this.bindRoutes([
 			{ path: '/login', func: this.login, method: 'post' },
-			{ path: '/register', func: this.register, method: 'post' },
+			{
+				path: '/register',
+				func: this.register,
+				method: 'post',
+				middlewares: [new ValidateMiddleware(UserRegisterDto)],
+			},
 		]);
 	}
 
@@ -36,7 +38,7 @@ export class UserController extends BaseController implements IUserController {
 		if (!result) {
 			return _next(new HTTPError(422, 'A user with this email already exists'));
 		}
-		this.ok(res, { email: result.email });
+		this.ok(res, { email: result.email, name: result.name });
 	}
 
 	login({ body }: Request<{}, {}, UserLoginDto>, res: Response, next: NextFunction): void {
