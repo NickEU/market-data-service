@@ -6,4 +6,5 @@ export const TYPES = {
 	IUserService: Symbol.for('IUserService'),
 	IExceptionFilter: Symbol.for('IExceptionFilter'),
 	PrismaService: Symbol.for('PrismaService'),
+	IUsersRepository: Symbol.for('IUsersRepository'),
 };
