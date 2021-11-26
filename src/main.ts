@@ -31,12 +31,12 @@ export interface BootstrapReturn {
 	app: App;
 }
 
-function bootstrap(): BootstrapReturn {
+async function bootstrap(): Promise<BootstrapReturn> {
 	const appContainer = new Container();
 	appContainer.load(appBindings);
 	const app = appContainer.get<App>(TYPES.Application);
-	app.init();
+	await app.init();
 	return { appContainer, app };
 }
 
-export const { app, appContainer } = bootstrap();
+export const boot = bootstrap();

@@ -12,8 +12,9 @@
     "build": "tsc.cmd",
     "lint": "eslint ./src/**",
     "lint:fix": "eslint ./src/** --fix",
-    "test": "clinic doctor --on-port 'autocannon -m POST localhost:8000/users/register' -- node dist/main.js",
-    "jest": "jest"
+    "test:clinic": "clinic doctor --on-port 'autocannon -m POST localhost:8000/users/register' -- node dist/main.js",
+    "test": "jest",
+    "test:e2e": "jest --config jest.e2e.config.ts --coverage"
   },
   "author": "Nick Knock",
   "license": "ISC",
