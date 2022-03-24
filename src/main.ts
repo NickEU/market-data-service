@@ -16,12 +16,15 @@ import { UsersRepository } from './users/users.repository';
 import { IUsersRepository } from './users/users.repository.interface';
 import { ICryptoController } from './crypto/crypto.controller.interface';
 import { CryptoController } from './crypto/crypto.controller';
+import { TokenMarketDataService } from './crypto/token.market.data.service';
+import { ITokenMarketDataService } from './crypto/token.market.data.service.interface';
 
 export const appBindings = new ContainerModule((bind: interfaces.Bind) => {
 	bind<ILogger>(TYPES.ILogger).to(LoggerService).inSingletonScope();
 	bind<IExceptionFilter>(TYPES.IExceptionFilter).to(ExceptionFilter).inSingletonScope();
 	bind<IUserController>(TYPES.IUserController).to(UserController);
 	bind<ICryptoController>(TYPES.ICryptoController).to(CryptoController);
+	bind<ITokenMarketDataService>(TYPES.ITokenMarketDataService).to(TokenMarketDataService);
 	bind<IConfigService>(TYPES.IConfigService).to(ConfigService).inSingletonScope();
 	bind<IUserService>(TYPES.IUserService).to(UserService).inSingletonScope();
 	bind<PrismaService>(TYPES.PrismaService).to(PrismaService).inSingletonScope();
