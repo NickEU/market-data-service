@@ -5,6 +5,7 @@ import { ILogger } from './logger/logger.interface';
 import { injectable, inject } from 'inversify';
 import { TYPES } from './types';
 import { IUserController } from './users/users.controller.interface';
+import { ICryptoController } from './crypto/crypto.controller.interface';
 import { json } from 'body-parser';
 import { IConfigService } from './config/config.service.interface';
 import { IExceptionFilter } from './errors/exception.filter.interface';
@@ -20,6 +21,7 @@ export class App {
 	constructor(
 		@inject(TYPES.ILogger) private logger: ILogger,
 		@inject(TYPES.IUserController) private userController: IUserController,
+		@inject(TYPES.ICryptoController) private cryptoController: ICryptoController,
 		@inject(TYPES.IExceptionFilter) private exceptionFilter: IExceptionFilter,
 		@inject(TYPES.IConfigService) private configService: IConfigService,
 		@inject(TYPES.PrismaService) private prismaService: PrismaService,
@@ -37,6 +39,7 @@ export class App {
 
 	useRoutes(): void {
 		this.app.use('/users', this.userController.router);
+		this.app.use('/crypto', this.cryptoController.router);
 	}
 
 	useExceptionFilters(): void {
