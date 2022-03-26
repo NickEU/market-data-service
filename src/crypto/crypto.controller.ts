@@ -1,7 +1,6 @@
 import { BaseController } from '../common/base.controller';
 import { ICryptoController } from './crypto.controller.interface';
 import { Request, Response, NextFunction } from 'express';
-import { HTTPError } from '../errors/http-error.class';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../types';
 import { ILogger } from '../logger/logger.interface';
@@ -31,11 +30,41 @@ export class CryptoController extends BaseController implements ICryptoControlle
 	}
 
 	async testLiveMarketDataApi(req: Request, res: Response, next: NextFunction): Promise<void> {
-		const pingResult = await this._tokenMarketDataService.ping();
-		this.ok(res, pingResult);
+		try {
+			const pingResult = await this._tokenMarketDataService.ping();
+			this.ok(res, pingResult);
+			next();
+		} catch (e) {
+			next(e);
+		}
 	}
 
-	async getLiveTokenData(req: Request, res: Response, next: NextFunction): Promise<void> {
-		this.ok(res, 'Hello');
+	async getLiveTokenData({ body }: Request, res: Response, next: NextFunction): Promise<void> {
+		try {
+			const id = body.id;
+			const timePeriod = body.timePeriod ?? '1m';
+			if (!id) {
+				res.sendStatus(404) && next();
+				return;
+			}
+			const pingResult = await this._tokenMarketDataService.getLiveMarketDataForToken(
+				id,
+				timePeriod,
+			);
+			if (pingResult.length > 0) {
+				const freshCandleStats = pingResult[0];
+				const candleSaveResult = await this._tokenMarketDataService.createCandleRecordInDb(
+					freshCandleStats,
+				);
+				if (candleSaveResult) {
+					this.ok(res, freshCandleStats);
+				} else {
+					res.sendStatus(500);
+				}
+			}
+			next();
+		} catch (e) {
+			next(e);
+		}
 	}
 }
