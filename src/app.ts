@@ -43,6 +43,7 @@ export class App {
 	}
 
 	useExceptionFilters(): void {
+		//bind to avoid losing context in express
 		this.app.use(this.exceptionFilter.catch.bind(this.exceptionFilter));
 	}
 

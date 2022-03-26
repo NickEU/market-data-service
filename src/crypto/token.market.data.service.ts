@@ -4,7 +4,7 @@ import { ILogger } from '../logger/logger.interface';
 import { TYPES } from '../types';
 import { ITokenMarketDataService } from './token.market.data.service.interface';
 import CoinGecko from 'coingecko-api';
-
+import got from 'got';
 @injectable()
 export class TokenMarketDataService implements ITokenMarketDataService {
 	constructor(
@@ -24,5 +24,23 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		return pingResult;
 	}
 
-	getLiveMarketDataForToken: (tokenName: string) => Promise<object>;
+	async getLiveMarketDataForToken(
+		tokenId: string,
+		timePeriod: string,
+	): Promise<Array<Array<Number>>> {
+		const result: any = await got
+			.get(`https://api.gemini.com/v2/candles/${tokenId}/${timePeriod}`)
+			.json();
+		return result;
+	}
+
+	async createCandleRecordInDb(candleData: Number[]): Promise<boolean> {
+		this._logger.log(candleData);
+		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = candleData;
+		this._logger.log(
+			`Time = ${timeMs}, Open price = ${openPrice}, Close Price = ${highPrice}, Low price = ${lowPrice}, Close Price = ${closePrice}, Volume = ${volume}`,
+		);
+		//TODO : connect to DB and save a record.
+		return true;
+	}
 }
