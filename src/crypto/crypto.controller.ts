@@ -53,11 +53,19 @@ export class CryptoController extends BaseController implements ICryptoControlle
 			);
 			if (pingResult.length > 0) {
 				const freshCandleStats = pingResult[0];
+
+				const statType = timePeriod === '1m' ? 1 : 2;
 				const candleSaveResult = await this._tokenMarketDataService.createCandleRecordInDb(
+					id,
 					freshCandleStats,
+					statType,
 				);
 				if (candleSaveResult) {
-					this.ok(res, freshCandleStats);
+					const lastSavedCandleInDb = await this._tokenMarketDataService.findLastCandleRecordInDb(
+						id,
+						statType,
+					);
+					this.ok(res, candleSaveResult);
 				} else {
 					res.sendStatus(500);
 				}

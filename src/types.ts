@@ -9,4 +9,5 @@ export const TYPES = {
 	IUsersRepository: Symbol.for('IUsersRepository'),
 	ICryptoController: Symbol.for('ICryptoController'),
 	ITokenMarketDataService: Symbol.for('ITokenMarketDataService'),
+	ITokenMarketDataRepository: Symbol.for('ITokenMarketDataRepository'),
 };
