@@ -36,7 +36,11 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 
 	async createCandleRecordInDb(candleData: Number[]): Promise<boolean> {
 		this._logger.log(candleData);
-		const [timeMs] = candleData;
+		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = candleData;
+		this._logger.log(
+			`Time = ${timeMs}, Open price = ${openPrice}, Close Price = ${highPrice}, Low price = ${lowPrice}, Close Price = ${closePrice}, Volume = ${volume}`,
+		);
+		//TODO : connect to DB and save a record.
 		return true;
 	}
 }
