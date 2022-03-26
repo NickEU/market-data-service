@@ -16,3 +16,15 @@ model UserModel {
   password String
   name String
 }
+
+model TokenCandleModel {
+  id Int @id @default(autoincrement())
+  token_code String
+  time DateTime
+  open Decimal
+  high Decimal
+  low Decimal
+  close Decimal
+  volume Decimal
+  stat_type Int
+}
