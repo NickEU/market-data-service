@@ -18,17 +18,26 @@ import { ICryptoController } from './crypto/crypto.controller.interface';
 import { CryptoController } from './crypto/crypto.controller';
 import { TokenMarketDataService } from './crypto/token.market.data.service';
 import { ITokenMarketDataService } from './crypto/token.market.data.service.interface';
+import { ITokenMarketDataRepository } from './crypto/token.market.data.repository.interface';
+import { TokenMarketDataRepository } from './crypto/token.market.data.repository';
 
 export const appBindings = new ContainerModule((bind: interfaces.Bind) => {
+	// Misc
 	bind<ILogger>(TYPES.ILogger).to(LoggerService).inSingletonScope();
 	bind<IExceptionFilter>(TYPES.IExceptionFilter).to(ExceptionFilter).inSingletonScope();
+	// Controllers
 	bind<IUserController>(TYPES.IUserController).to(UserController);
 	bind<ICryptoController>(TYPES.ICryptoController).to(CryptoController);
+	// Services
 	bind<ITokenMarketDataService>(TYPES.ITokenMarketDataService).to(TokenMarketDataService);
 	bind<IConfigService>(TYPES.IConfigService).to(ConfigService).inSingletonScope();
 	bind<IUserService>(TYPES.IUserService).to(UserService).inSingletonScope();
 	bind<PrismaService>(TYPES.PrismaService).to(PrismaService).inSingletonScope();
+	// Repositories
 	bind<IUsersRepository>(TYPES.IUsersRepository).to(UsersRepository).inSingletonScope();
+	bind<ITokenMarketDataRepository>(TYPES.ITokenMarketDataRepository)
+		.to(TokenMarketDataRepository)
+		.inSingletonScope();
 	bind<App>(TYPES.Application).to(App).inSingletonScope();
 });
 
