@@ -14,10 +14,10 @@ model TokenCandleModel {
   id Int @id @default(autoincrement())
   token_code String
   time DateTime
-  open Decimal
-  high Decimal
-  low Decimal
-  close Decimal
-  volume Decimal
+  open Decimal? @db.Decimal(22, 10)
+  high Decimal? @db.Decimal(22, 10)
+  low Decimal? @db.Decimal(22, 10)
+  close Decimal? @db.Decimal(22, 10)
+  volume Decimal? @db.Decimal(22, 10)
   stat_type Int
 }
