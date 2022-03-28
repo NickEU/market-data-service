@@ -2,4 +2,8 @@ export const CONSTANTS = {
 	SALT: 'SALT',
 	PORT: 'PORT',
 	SECRET: 'SECRET',
+	GET_LIVE_TOKEN_DATA_ENDPOINT: 'http://127.0.0.1:8000/crypto/getLiveTokenData',
+	TOKEN_CODE_BTC_USD: 'btcusd',
+	TOKEN_CODE_ETH_USD: 'ethusd',
+	CANDLE_TIME_PERIOD_ONE_MINUTE: '1m',
 };
