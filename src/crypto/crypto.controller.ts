@@ -53,7 +53,7 @@ export class CryptoController extends BaseController implements ICryptoControlle
 			);
 			if (pingResult.length > 0) {
 				const freshCandleStats = pingResult[0];
-
+				// TODO: make proper stat type conversion helpers
 				const statType = timePeriod === '1m' ? 1 : 2;
 				const candleSaveResult = await this._tokenMarketDataService.createCandleRecordInDb(
 					id,
