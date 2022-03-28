@@ -6,6 +6,10 @@ import { TYPES } from '../types';
 import { ILogger } from '../logger/logger.interface';
 import { IConfigService } from '../config/config.service.interface';
 import { ITokenMarketDataService } from './token.market.data.service.interface';
+import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
+import { ValidateMiddleware } from '../common/validate.middleware';
+import { CONSTANTS } from '../common/constants';
+import { HTTPError } from '../errors/http-error.class';
 
 @injectable()
 export class CryptoController extends BaseController implements ICryptoController {
@@ -19,7 +23,8 @@ export class CryptoController extends BaseController implements ICryptoControlle
 			{
 				path: '/getLiveTokenData',
 				func: this.getLiveTokenData,
-				method: 'get',
+				method: 'post',
+				middlewares: [new ValidateMiddleware(GetLiveTokenDataDTO)],
 			},
 			{
 				path: '/testLiveMarketDataApi',
@@ -39,27 +44,31 @@ export class CryptoController extends BaseController implements ICryptoControlle
 		}
 	}
 
-	async getLiveTokenData({ body }: Request, res: Response, next: NextFunction): Promise<void> {
+	async getLiveTokenData(
+		{ body }: Request<{}, {}, GetLiveTokenDataDTO>,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
 		try {
-			const id = body.id;
-			const timePeriod = body.timePeriod ?? '1m';
-			if (!id) {
-				res.sendStatus(404) && next();
-				return;
-			}
-			const pingResult = await this._tokenMarketDataService.getLiveMarketDataForToken(
+			const id = body.token_code;
+			const timePeriod = body.candle_time_period ?? CONSTANTS.CANDLE_TIME_PERIOD_ONE_MINUTE;
+
+			const candleData = await this._tokenMarketDataService.getLiveMarketDataForToken(
 				id,
 				timePeriod,
 			);
-			if (pingResult.length > 0) {
-				const freshCandleStats = pingResult[0];
 
-				const statType = timePeriod === '1m' ? 1 : 2;
+			if (candleData.length > 0) {
+				const freshCandleStats = candleData[0];
+				// TODO: make proper stat type conversion helpers
+				const statType = timePeriod === CONSTANTS.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
+
 				const candleSaveResult = await this._tokenMarketDataService.createCandleRecordInDb(
 					id,
 					freshCandleStats,
 					statType,
 				);
+
 				if (candleSaveResult) {
 					const lastSavedCandleInDb = await this._tokenMarketDataService.findLastCandleRecordInDb(
 						id,
@@ -67,7 +76,13 @@ export class CryptoController extends BaseController implements ICryptoControlle
 					);
 					this.ok(res, candleSaveResult);
 				} else {
-					res.sendStatus(500);
+					return next(
+						new HTTPError(
+							422,
+							'The record for this candle already exists in the database',
+							'CryptoController',
+						),
+					);
 				}
 			}
 			next();

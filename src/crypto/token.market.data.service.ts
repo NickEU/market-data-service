@@ -64,7 +64,6 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 			volume,
 			statType,
 		);
-		//TODO: make sure duplicate records don't get inserted into the DB for the combination of the same tokenCode, timestamp and statType
 		const result = await this._tokenMarketDataRepo.create(candle);
 		return result;
 	}
@@ -74,8 +73,6 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		statType: number,
 	): Promise<TokenCandleModel | null> {
 		const result = await this._tokenMarketDataRepo.find(tokenCode, statType);
-		this._logger.log(`Following records found:`);
-		this._logger.log(result);
 		if (result) {
 			this._logger.log(`Last record found:`);
 			this._logger.log(result[0]);

@@ -4,7 +4,6 @@ import { Server } from 'http';
 import { ILogger } from './logger/logger.interface';
 import { injectable, inject } from 'inversify';
 import { TYPES } from './types';
-import { IUserController } from './users/users.controller.interface';
 import { ICryptoController } from './crypto/crypto.controller.interface';
 import { json } from 'body-parser';
 import { IConfigService } from './config/config.service.interface';
@@ -12,6 +11,7 @@ import { IExceptionFilter } from './errors/exception.filter.interface';
 import { CONSTANTS } from './common/constants';
 import { PrismaService } from './database/prisma.service';
 import { AuthMiddleware } from './common/auth.middleware';
+import { IScheduler } from './scheduler/scheduler.interface';
 @injectable()
 export class App {
 	app: Express;
@@ -20,11 +20,11 @@ export class App {
 
 	constructor(
 		@inject(TYPES.ILogger) private logger: ILogger,
-		@inject(TYPES.IUserController) private userController: IUserController,
 		@inject(TYPES.ICryptoController) private cryptoController: ICryptoController,
 		@inject(TYPES.IExceptionFilter) private exceptionFilter: IExceptionFilter,
 		@inject(TYPES.IConfigService) private configService: IConfigService,
 		@inject(TYPES.PrismaService) private prismaService: PrismaService,
+		@inject(TYPES.IScheduler) private scheduler: IScheduler,
 	) {
 		this.app = express();
 		const port = this.configService.get(CONSTANTS.PORT) ?? 8000;
@@ -38,7 +38,6 @@ export class App {
 	}
 
 	useRoutes(): void {
-		this.app.use('/users', this.userController.router);
 		this.app.use('/crypto', this.cryptoController.router);
 	}
 
@@ -54,6 +53,7 @@ export class App {
 		await this.prismaService.connect();
 		this.server = this.app.listen(this.port);
 		this.logger.log(`Server is running at https://localhost:${this.port}!`);
+		await this.scheduler.launchApiCaller();
 	}
 
 	public close(): void {
