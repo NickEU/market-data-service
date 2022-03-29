@@ -4,10 +4,12 @@ import { ILogger } from '../logger/logger.interface';
 import { TYPES } from '../types';
 import { ITokenMarketDataService } from './token.market.data.service.interface';
 import CoinGecko from 'coingecko-api';
-import got from 'got';
 import { ITokenMarketDataRepository } from './token.market.data.repository.interface';
 import { TokenCandle } from './candle.entity';
 import { TokenCandleModel } from '@prisma/client';
+import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
+import { CandleDataDto } from './dto/candle-data-dto';
+import { CONSTANTS } from '../common/constants';
 @injectable()
 export class TokenMarketDataService implements ITokenMarketDataService {
 	constructor(
@@ -29,33 +31,29 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		return pingResult;
 	}
 
-	async getLiveMarketDataForToken(
-		tokenId: string,
-		timePeriod: string,
-	): Promise<Array<Array<number>>> {
-		const result: any = await got
-			.get(`https://api.gemini.com/v2/candles/${tokenId}/${timePeriod}`)
-			.json();
-		// for (const candle of result) {
-		// 	const date = new Date(candle[0]).toLocaleTimeString('en-US');
-		// 	this._logger.log(date);
-		// 	// expected output "8/30/2017"
-		// }
+	async getLiveMarketDataForToken(dto: GetLiveTokenDataDTO): Promise<CandleDataDto | null> {
+		this._logger.logIfDebug('Entering getLiveMarketDataForToken service method');
+		const result = await this._tokenMarketDataRepo.getMarketCandleData(dto);
 		return result;
 	}
 
-	async createCandleRecordInDb(
-		tokenCode: string,
-		candleData: number[],
-		statType: number,
-	): Promise<TokenCandleModel | null> {
-		this._logger.log(candleData);
-		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = candleData;
-		this._logger.log(
+	async createCandleRecordInDb({
+		token_code,
+		candle_data,
+		candle_time_period,
+	}: CandleDataDto): Promise<TokenCandleModel | null> {
+		this._logger.logIfDebug('Entering createCandleRecordInDb service method');
+
+		const freshCandleStats = candle_data[0];
+		// TODO: make proper stat type conversion helpers
+		const statType = candle_time_period === CONSTANTS.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
+
+		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = freshCandleStats;
+		this._logger.logIfDebug(
 			`Time = ${timeMs}, Open price = ${openPrice}, Close Price = ${highPrice}, Low price = ${lowPrice}, Close Price = ${closePrice}, Volume = ${volume}`,
 		);
 		const candle = new TokenCandle(
-			tokenCode,
+			token_code,
 			new Date(timeMs),
 			openPrice,
 			highPrice,
@@ -64,7 +62,7 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 			volume,
 			statType,
 		);
-		const result = await this._tokenMarketDataRepo.create(candle);
+		const result = await this._tokenMarketDataRepo.createCandleRecordInDb(candle);
 		return result;
 	}
 
@@ -72,7 +70,8 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		tokenCode: string,
 		statType: number,
 	): Promise<TokenCandleModel | null> {
-		const result = await this._tokenMarketDataRepo.find(tokenCode, statType);
+		this._logger.logIfDebug('Entering findLastCandleRecordInDb service method');
+		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(tokenCode, statType);
 		if (result) {
 			this._logger.log(`Last record found:`);
 			this._logger.log(result[0]);

@@ -1,6 +1,9 @@
+import { TokenCandleModel } from '@prisma/client';
 import got from 'got';
 import { inject, injectable } from 'inversify';
 import { CONSTANTS } from '../common/constants';
+import { CandleDataDto } from '../crypto/dto/candle-data-dto';
+import { GetLiveTokenDataDTO } from '../crypto/dto/get-live-token-data.dto';
 import { ILogger } from '../logger/logger.interface';
 import { TYPES } from '../types';
 
@@ -12,10 +15,17 @@ export class Scheduler {
 		try {
 			this._logger.log('Getting fresh token data for the following tokens: ', tokenCodes);
 			for (const token of tokenCodes) {
-				console.log(token);
-				await got
-					.post(CONSTANTS.GET_LIVE_TOKEN_DATA_ENDPOINT, { json: { token_code: token } })
+				const tokenReqData: GetLiveTokenDataDTO = { token_code: token, candle_time_period: '1m' };
+				const candleData: CandleDataDto = await got
+					.post(CONSTANTS.GET_LIVE_TOKEN_DATA_ENDPOINT, { json: tokenReqData })
 					.json();
+
+				const saveResult: TokenCandleModel = await got
+					.post(CONSTANTS.SAVE_LAST_CANDLE_DATA_TO_DB_ENDPOINT, {
+						json: candleData,
+					})
+					.json();
+				this._logger.log(saveResult);
 			}
 		} catch (e) {
 			this._logger.error(e);
