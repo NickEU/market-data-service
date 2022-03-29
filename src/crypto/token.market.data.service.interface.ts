@@ -1,18 +1,13 @@
 import { TokenCandleModel } from '@prisma/client';
+import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
+import { CandleDataDto } from './dto/candle-data-dto';
 
 export interface ITokenMarketDataService {
 	ping: () => Promise<object>;
 
-	getLiveMarketDataForToken: (
-		tokenName: string,
-		timePeriod: string,
-	) => Promise<Array<Array<number>>>;
+	getLiveMarketDataForToken: (body: GetLiveTokenDataDTO) => Promise<CandleDataDto | null>;
 
-	createCandleRecordInDb: (
-		tokenCode: string,
-		candleData: Array<number>,
-		statType: number,
-	) => Promise<TokenCandleModel | null>;
+	createCandleRecordInDb: (body: CandleDataDto) => Promise<TokenCandleModel | null>;
 
 	findLastCandleRecordInDb: (
 		tokenCode: string,

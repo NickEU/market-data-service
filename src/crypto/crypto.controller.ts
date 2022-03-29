@@ -4,18 +4,18 @@ import { Request, Response, NextFunction } from 'express';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../types';
 import { ILogger } from '../logger/logger.interface';
-import { IConfigService } from '../config/config.service.interface';
 import { ITokenMarketDataService } from './token.market.data.service.interface';
 import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
 import { ValidateMiddleware } from '../common/validate.middleware';
-import { CONSTANTS } from '../common/constants';
 import { HTTPError } from '../errors/http-error.class';
+import { CandleDataDto } from './dto/candle-data-dto';
+import { TokenCandleModel } from '@prisma/client';
+import { IConfigService } from '../config/config.service.interface';
 
 @injectable()
 export class CryptoController extends BaseController implements ICryptoController {
 	constructor(
 		@inject(TYPES.ILogger) private _logger: ILogger,
-		@inject(TYPES.IConfigService) private _configService: IConfigService,
 		@inject(TYPES.ITokenMarketDataService) private _tokenMarketDataService: ITokenMarketDataService,
 	) {
 		super(_logger);
@@ -25,6 +25,12 @@ export class CryptoController extends BaseController implements ICryptoControlle
 				func: this.getLiveTokenData,
 				method: 'post',
 				middlewares: [new ValidateMiddleware(GetLiveTokenDataDTO)],
+			},
+			{
+				path: '/saveLastCandleDataToDb',
+				func: this.saveLastCandleDataToDb,
+				method: 'post',
+				middlewares: [new ValidateMiddleware(CandleDataDto)],
 			},
 			{
 				path: '/testLiveMarketDataApi',
@@ -50,33 +56,36 @@ export class CryptoController extends BaseController implements ICryptoControlle
 		next: NextFunction,
 	): Promise<void> {
 		try {
-			const id = body.token_code;
-			const timePeriod = body.candle_time_period ?? CONSTANTS.CANDLE_TIME_PERIOD_ONE_MINUTE;
+			this._logger.logIfDebug('Entering getLiveTokenData controller method');
+			const candleData = await this._tokenMarketDataService.getLiveMarketDataForToken(body);
+			if (candleData) {
+				this._logger.log(`Successfully retrieved candle data for ${body.token_code}`);
+				this.ok(res, candleData);
+			} else {
+				return next(new HTTPError(421, 'Error retrieving live token data', 'CryptoController'));
+			}
 
-			const candleData = await this._tokenMarketDataService.getLiveMarketDataForToken(
-				id,
-				timePeriod,
-			);
+			next();
+		} catch (e) {
+			next(e);
+		}
+	}
 
-			if (candleData.length > 0) {
-				const freshCandleStats = candleData[0];
-				// TODO: make proper stat type conversion helpers
-				const statType = timePeriod === CONSTANTS.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
-
-				const candleSaveResult = await this._tokenMarketDataService.createCandleRecordInDb(
-					id,
-					freshCandleStats,
-					statType,
-				);
+	async saveLastCandleDataToDb(
+		{ body }: Request<{}, {}, CandleDataDto>,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		this._logger.logIfDebug('Entering saveLastCandleDataToDb controller method');
+		try {
+			if (body.candle_data.length > 0) {
+				const candleSaveResult = await this._tokenMarketDataService.createCandleRecordInDb(body);
 
 				if (candleSaveResult) {
-					const lastSavedCandleInDb = await this._tokenMarketDataService.findLastCandleRecordInDb(
-						id,
-						statType,
-					);
+					this._logger.log(`Successfully saved a new record for the following candle: `);
 					this.ok(res, candleSaveResult);
 				} else {
-					return next(
+					next(
 						new HTTPError(
 							422,
 							'The record for this candle already exists in the database',
@@ -85,7 +94,6 @@ export class CryptoController extends BaseController implements ICryptoControlle
 					);
 				}
 			}
-			next();
 		} catch (e) {
 			next(e);
 		}
