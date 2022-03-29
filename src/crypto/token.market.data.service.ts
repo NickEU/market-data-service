@@ -9,7 +9,7 @@ import { TokenCandle } from './candle.entity';
 import { TokenCandleModel } from '@prisma/client';
 import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
 import { CandleDataDto } from './dto/candle-data-dto';
-import { CONSTANTS } from '../common/constants';
+import { CRYPTO } from './constants/crypto';
 @injectable()
 export class TokenMarketDataService implements ITokenMarketDataService {
 	constructor(
@@ -46,7 +46,7 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 
 		const freshCandleStats = candle_data[0];
 		// TODO: make proper stat type conversion helpers
-		const statType = candle_time_period === CONSTANTS.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
+		const statType = candle_time_period === CRYPTO.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
 
 		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = freshCandleStats;
 		this._logger.logIfDebug(
