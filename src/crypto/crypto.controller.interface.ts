@@ -1,4 +1,3 @@
-import { TokenCandleModel } from '@prisma/client';
 import { Request, Response, NextFunction, Router } from 'express';
 
 export interface ICryptoController {

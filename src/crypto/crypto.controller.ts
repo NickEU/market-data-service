@@ -9,8 +9,9 @@ import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
 import { ValidateMiddleware } from '../common/validate.middleware';
 import { HTTPError } from '../errors/http-error.class';
 import { CandleDataDto } from './dto/candle-data-dto';
-import { TokenCandleModel } from '@prisma/client';
-import { IConfigService } from '../config/config.service.interface';
+import { CRYPTO } from './constants/crypto';
+import { PATHS } from './constants/paths';
+import { ERRORS } from './constants/errors';
 
 @injectable()
 export class CryptoController extends BaseController implements ICryptoController {
@@ -21,19 +22,19 @@ export class CryptoController extends BaseController implements ICryptoControlle
 		super(_logger);
 		this.bindRoutes([
 			{
-				path: '/getLiveTokenData',
+				path: PATHS.GET_LIVE_TOKEN_DATA,
 				func: this.getLiveTokenData,
 				method: 'post',
 				middlewares: [new ValidateMiddleware(GetLiveTokenDataDTO)],
 			},
 			{
-				path: '/saveLastCandleDataToDb',
+				path: PATHS.SAVE_LAST_CANDLE_DATA_TO_DB,
 				func: this.saveLastCandleDataToDb,
 				method: 'post',
 				middlewares: [new ValidateMiddleware(CandleDataDto)],
 			},
 			{
-				path: '/testLiveMarketDataApi',
+				path: PATHS.TEST_LIVE_MARKET_DATA_API,
 				func: this.testLiveMarketDataApi,
 				method: 'get',
 			},
@@ -62,7 +63,13 @@ export class CryptoController extends BaseController implements ICryptoControlle
 				this._logger.log(`Successfully retrieved candle data for ${body.token_code}`);
 				this.ok(res, candleData);
 			} else {
-				return next(new HTTPError(421, 'Error retrieving live token data', 'CryptoController'));
+				return next(
+					new HTTPError(
+						ERRORS.FAILURE_GETTING_LIVE_TOKEN_DATA.CODE,
+						ERRORS.FAILURE_GETTING_LIVE_TOKEN_DATA.MSG,
+						CRYPTO.CRYPTO_CONTROLLER,
+					),
+				);
 			}
 
 			next();
@@ -87,9 +94,9 @@ export class CryptoController extends BaseController implements ICryptoControlle
 				} else {
 					next(
 						new HTTPError(
-							422,
-							'The record for this candle already exists in the database',
-							'CryptoController',
+							ERRORS.RECORD_ALREADY_EXISTS_IN_DB.CODE,
+							ERRORS.RECORD_ALREADY_EXISTS_IN_DB.MSG,
+							CRYPTO.CRYPTO_CONTROLLER,
 						),
 					);
 				}
