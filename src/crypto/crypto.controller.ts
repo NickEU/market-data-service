@@ -11,6 +11,7 @@ import { HTTPError } from '../errors/http-error.class';
 import { CandleDataDto } from './dto/candle-data-dto';
 import { CRYPTO } from './constants/crypto';
 import { PATHS } from './constants/paths';
+import { ERRORS } from './constants/errors';
 
 @injectable()
 export class CryptoController extends BaseController implements ICryptoController {
@@ -63,7 +64,11 @@ export class CryptoController extends BaseController implements ICryptoControlle
 				this.ok(res, candleData);
 			} else {
 				return next(
-					new HTTPError(499, 'Error retrieving live token data', CRYPTO.CRYPTO_CONTROLLER),
+					new HTTPError(
+						ERRORS.FAILURE_GETTING_LIVE_TOKEN_DATA.CODE,
+						ERRORS.FAILURE_GETTING_LIVE_TOKEN_DATA.MSG,
+						CRYPTO.CRYPTO_CONTROLLER,
+					),
 				);
 			}
 
@@ -89,8 +94,8 @@ export class CryptoController extends BaseController implements ICryptoControlle
 				} else {
 					next(
 						new HTTPError(
-							498,
-							'The record for this candle already exists in the database',
+							ERRORS.RECORD_ALREADY_EXISTS_IN_DB.CODE,
+							ERRORS.RECORD_ALREADY_EXISTS_IN_DB.MSG,
 							CRYPTO.CRYPTO_CONTROLLER,
 						),
 					);
