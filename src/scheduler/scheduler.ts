@@ -35,7 +35,7 @@ export class Scheduler {
 	}
 
 	async _periodicTokenCandleCaller(): Promise<void> {
-		const tokenCodes = [CRYPTO.TOKEN_CODE_BTC_USD, CRYPTO.TOKEN_CODE_ETH_USD];
+		const tokenCodes = [CRYPTO.TOKEN_CODE_BTC_USD, CRYPTO.TOKEN_CODE_ETH_USD, CRYPTO.TOKEN_CODE_FTM_USD];
 		this._getDataFromApi(tokenCodes);
 		const apiDataRefreshPeriod = 60000; // 60 seconds
 		setInterval(this._getDataFromApi.bind(this, tokenCodes), apiDataRefreshPeriod);
