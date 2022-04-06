@@ -45,6 +45,7 @@ export class TokenMarketDataRepository implements ITokenMarketDataRepository {
 	}: TokenCandle): Promise<TokenCandleModel | null> {
 		this._logger.logIfDebug('Entering createCandleRecordInDb repo method');
 		//TODO: make sure duplicate records don't get inserted into the DB for the combination of the same tokenCode, timestamp and statType
+		//TODO: token_code should rly be an enum and should be stored in the DB as integer
 		const creationResult = this.prismaService.client.tokenCandleModel.create({
 			data: { token_code, time, open, high, low, close, volume, stat_type },
 		});

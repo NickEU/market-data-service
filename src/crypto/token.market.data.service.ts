@@ -46,6 +46,7 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 
 		const freshCandleStats = candle_data[0];
 		// TODO: make proper stat type conversion helpers
+		// TODO: statType should be an enum
 		const statType = candle_time_period === CRYPTO.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
 
 		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = freshCandleStats;
