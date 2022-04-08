@@ -121,7 +121,7 @@ export class CryptoController extends BaseController implements ICryptoControlle
 
 		const result = await this._tokenMarketDataService.findLastCandleRecordsForToken(findCandleDto);
 
-		this._logger.log(`Successfully retreived data for last ${result.length} records.`);
+		this._logger.log(`Successfully retrieved data for last ${result.length} records.`);
 		this.ok(res, result);
 	}
 }

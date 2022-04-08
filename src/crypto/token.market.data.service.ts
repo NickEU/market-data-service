@@ -9,8 +9,9 @@ import { TokenCandle } from './candle.entity';
 import { TokenCandleModel } from '@prisma/client';
 import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
 import { CandleDataDto } from './dto/candle-data-dto';
-import { CRYPTO } from './constants/crypto';
-import { FindCandleRecordsDTO } from './dto/find-candle-records-dto';
+import { FindCandleRecordsDTO, FindCandleRecordsParam } from './dto/find-candle-records-dto';
+import { TokenCandleTimePeriod } from './types';
+import { HELPERS } from './helpers/convert';
 @injectable()
 export class TokenMarketDataService implements ITokenMarketDataService {
 	constructor(
@@ -46,9 +47,8 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		this._logger.logIfDebug('Entering createCandleRecordInDb service method');
 
 		const freshCandleStats = candleData[0];
-		// TODO: make proper stat type conversion helpers
-		// TODO: statType should be an enum
-		const statType = candleTimePeriod === CRYPTO.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
+		
+		const statType = HELPERS.convertCandleTimePeriodStringToEnum(candleTimePeriod);
 
 		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = freshCandleStats;
 		this._logger.logIfDebug(
@@ -70,9 +70,12 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 
 	async findLastCandleRecordsForToken(findCandleRecordsDto: FindCandleRecordsDTO): Promise<TokenCandleModel[]> {
 		this._logger.logIfDebug('Entering findLastCandleRecordInDb service method');
-		findCandleRecordsDto.numRecords = findCandleRecordsDto.numRecords ?? 100;
-		findCandleRecordsDto.candleTimePeriod = +findCandleRecordsDto.candleTimePeriod ?? 1;
-		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRecordsDto);
+
+		const findCandleRepoParam = new FindCandleRecordsParam(findCandleRecordsDto);
+		findCandleRepoParam.numRecords = findCandleRecordsDto.numRecords ?? 100;
+		findCandleRepoParam.candleTimePeriodAsNum = +findCandleRecordsDto.candleTimePeriod ?? TokenCandleTimePeriod.ONE_MINUTE;
+
+		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRepoParam);
 		return result ?? [];
 	}
 }
