@@ -43,6 +43,7 @@ export class CryptoController extends BaseController implements ICryptoControlle
 				path: PATHS.FIND_LAST_CANDLE_RECORDS_FOR_TOKEN,
 				func: this.findLastCandleRecordsForToken,
 				method: 'post',
+				middlewares: [new ValidateMiddleware(FindCandleRecordsDTO)],
 			},
 		]);
 	}
