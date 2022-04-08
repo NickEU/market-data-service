@@ -9,7 +9,9 @@ import { TokenCandle } from './candle.entity';
 import { TokenCandleModel } from '@prisma/client';
 import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
 import { CandleDataDto } from './dto/candle-data-dto';
-import { CRYPTO } from './constants/crypto';
+import { FindCandleRecordsDTO, FindCandleRecordsParam } from './dto/find-candle-records-dto';
+import { TokenCandleTimePeriod } from './types';
+import { HELPERS } from './helpers/convert';
 @injectable()
 export class TokenMarketDataService implements ITokenMarketDataService {
 	constructor(
@@ -38,23 +40,22 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 	}
 
 	async createCandleRecordInDb({
-		token_code,
-		candle_data,
-		candle_time_period,
+		tokenCode,
+		candleData,
+		candleTimePeriod,
 	}: CandleDataDto): Promise<TokenCandleModel | null> {
 		this._logger.logIfDebug('Entering createCandleRecordInDb service method');
 
-		const freshCandleStats = candle_data[0];
-		// TODO: make proper stat type conversion helpers
-		// TODO: statType should be an enum
-		const statType = candle_time_period === CRYPTO.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
+		const freshCandleStats = candleData[0];
+		
+		const statType = HELPERS.convertCandleTimePeriodStringToEnum(candleTimePeriod);
 
 		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = freshCandleStats;
 		this._logger.logIfDebug(
 			`Time = ${timeMs}, Open price = ${openPrice}, Close Price = ${highPrice}, Low price = ${lowPrice}, Close Price = ${closePrice}, Volume = ${volume}`,
 		);
 		const candle = new TokenCandle(
-			token_code,
+			tokenCode,
 			new Date(timeMs),
 			openPrice,
 			highPrice,
@@ -67,17 +68,14 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		return result;
 	}
 
-	async findLastCandleRecordInDb(
-		tokenCode: string,
-		statType: number,
-	): Promise<TokenCandleModel | null> {
+	async findLastCandleRecordsForToken(findCandleRecordsDto: FindCandleRecordsDTO): Promise<TokenCandleModel[]> {
 		this._logger.logIfDebug('Entering findLastCandleRecordInDb service method');
-		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(tokenCode, statType);
-		if (result) {
-			this._logger.log(`Last record found:`);
-			this._logger.log(result[0]);
-			return result[0];
-		}
-		return null;
+
+		const findCandleRepoParam = new FindCandleRecordsParam(findCandleRecordsDto);
+		findCandleRepoParam.numRecords = findCandleRecordsDto.numRecords ?? 100;
+		findCandleRepoParam.candleTimePeriodAsNum = +findCandleRecordsDto.candleTimePeriod ?? TokenCandleTimePeriod.ONE_MINUTE;
+
+		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRepoParam);
+		return result ?? [];
 	}
 }

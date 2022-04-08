@@ -12,6 +12,7 @@ import { CandleDataDto } from './dto/candle-data-dto';
 import { CRYPTO } from './constants/crypto';
 import { PATHS } from './constants/paths';
 import { ERRORS } from './constants/errors';
+import { FindCandleRecordsDTO } from './dto/find-candle-records-dto';
 
 @injectable()
 export class CryptoController extends BaseController implements ICryptoController {
@@ -38,6 +39,11 @@ export class CryptoController extends BaseController implements ICryptoControlle
 				func: this.testLiveMarketDataApi,
 				method: 'get',
 			},
+			{
+				path: PATHS.FIND_LAST_CANDLE_RECORDS_FOR_TOKEN,
+				func: this.findLastCandleRecordsForToken,
+				method: 'post',
+			},
 		]);
 	}
 
@@ -60,7 +66,7 @@ export class CryptoController extends BaseController implements ICryptoControlle
 			this._logger.logIfDebug('Entering getLiveTokenData controller method');
 			const candleData = await this._tokenMarketDataService.getLiveMarketDataForToken(body);
 			if (candleData) {
-				this._logger.log(`Successfully retrieved candle data for ${body.token_code}`);
+				this._logger.log(`Successfully retrieved candle data for ${body.tokenCode}`);
 				this.ok(res, candleData);
 			} else {
 				return next(
@@ -85,7 +91,7 @@ export class CryptoController extends BaseController implements ICryptoControlle
 	): Promise<void> {
 		this._logger.logIfDebug('Entering saveLastCandleDataToDb controller method');
 		try {
-			if (body.candle_data.length > 0) {
+			if (body.candleData.length > 0) {
 				const candleSaveResult = await this._tokenMarketDataService.createCandleRecordInDb(body);
 
 				if (candleSaveResult) {
@@ -104,5 +110,18 @@ export class CryptoController extends BaseController implements ICryptoControlle
 		} catch (e) {
 			next(e);
 		}
+	}
+
+	async findLastCandleRecordsForToken( 
+		{ body }: Request<{}, {}, FindCandleRecordsDTO>,
+		res: Response,
+		next: NextFunction
+	): Promise<void>  {
+		const findCandleDto = new FindCandleRecordsDTO({tokenCode: body.tokenCode, candleTimePeriod: body.candleTimePeriod, numRecords: body.numRecords});
+
+		const result = await this._tokenMarketDataService.findLastCandleRecordsForToken(findCandleDto);
+
+		this._logger.log(`Successfully retrieved data for last ${result.length} records.`);
+		this.ok(res, result);
 	}
 }
