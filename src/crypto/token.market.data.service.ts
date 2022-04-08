@@ -39,23 +39,23 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 	}
 
 	async createCandleRecordInDb({
-		token_code,
-		candle_data,
-		candle_time_period,
+		tokenCode,
+		candleData,
+		candleTimePeriod,
 	}: CandleDataDto): Promise<TokenCandleModel | null> {
 		this._logger.logIfDebug('Entering createCandleRecordInDb service method');
 
-		const freshCandleStats = candle_data[0];
+		const freshCandleStats = candleData[0];
 		// TODO: make proper stat type conversion helpers
 		// TODO: statType should be an enum
-		const statType = candle_time_period === CRYPTO.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
+		const statType = candleTimePeriod === CRYPTO.CANDLE_TIME_PERIOD_ONE_MINUTE ? 1 : 2;
 
 		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = freshCandleStats;
 		this._logger.logIfDebug(
 			`Time = ${timeMs}, Open price = ${openPrice}, Close Price = ${highPrice}, Low price = ${lowPrice}, Close Price = ${closePrice}, Volume = ${volume}`,
 		);
 		const candle = new TokenCandle(
-			token_code,
+			tokenCode,
 			new Date(timeMs),
 			openPrice,
 			highPrice,
@@ -70,8 +70,8 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 
 	async findLastCandleRecordsForToken(findCandleRecordsDto: FindCandleRecordsDTO): Promise<TokenCandleModel[]> {
 		this._logger.logIfDebug('Entering findLastCandleRecordInDb service method');
-		findCandleRecordsDto.num_records = findCandleRecordsDto.num_records ?? 100;
-		findCandleRecordsDto.candle_time_period = +findCandleRecordsDto.candle_time_period ?? 1;
+		findCandleRecordsDto.numRecords = findCandleRecordsDto.numRecords ?? 100;
+		findCandleRecordsDto.candleTimePeriod = +findCandleRecordsDto.candleTimePeriod ?? 1;
 		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRecordsDto);
 		return result ?? [];
 	}

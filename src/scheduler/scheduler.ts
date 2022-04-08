@@ -17,7 +17,7 @@ export class Scheduler {
 		try {
 			this._logger.log('Getting fresh token data for the following tokens: ', tokenCodes);
 			for (const token of tokenCodes) {
-				const tokenReqData: GetLiveTokenDataDTO = { token_code: token, candle_time_period: '1m' };
+				const tokenReqData: GetLiveTokenDataDTO = { tokenCode: token, candleTimePeriod: '1m' };
 				const candleData: CandleDataDto = await got
 					.post(ENDPOINTS.GET_LIVE_TOKEN_DATA, { json: tokenReqData })
 					.json();

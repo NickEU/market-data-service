@@ -66,7 +66,7 @@ export class CryptoController extends BaseController implements ICryptoControlle
 			this._logger.logIfDebug('Entering getLiveTokenData controller method');
 			const candleData = await this._tokenMarketDataService.getLiveMarketDataForToken(body);
 			if (candleData) {
-				this._logger.log(`Successfully retrieved candle data for ${body.token_code}`);
+				this._logger.log(`Successfully retrieved candle data for ${body.tokenCode}`);
 				this.ok(res, candleData);
 			} else {
 				return next(
@@ -91,7 +91,7 @@ export class CryptoController extends BaseController implements ICryptoControlle
 	): Promise<void> {
 		this._logger.logIfDebug('Entering saveLastCandleDataToDb controller method');
 		try {
-			if (body.candle_data.length > 0) {
+			if (body.candleData.length > 0) {
 				const candleSaveResult = await this._tokenMarketDataService.createCandleRecordInDb(body);
 
 				if (candleSaveResult) {
@@ -117,8 +117,7 @@ export class CryptoController extends BaseController implements ICryptoControlle
 		res: Response,
 		next: NextFunction
 	): Promise<void>  {
-		//TODO : proper stat type conversion
-		const findCandleDto = new FindCandleRecordsDTO({token_code: body.token_code, candle_time_period: body.candle_time_period, num_records: body.num_records});
+		const findCandleDto = new FindCandleRecordsDTO({tokenCode: body.tokenCode, candleTimePeriod: body.candleTimePeriod, numRecords: body.numRecords});
 
 		const result = await this._tokenMarketDataService.findLastCandleRecordsForToken(findCandleDto);
 

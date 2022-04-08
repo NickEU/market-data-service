@@ -1,17 +1,17 @@
 export class TokenCandle {
 	constructor(
-		private readonly _token_code: string,
+		private readonly _tokenCode: string,
 		private readonly _time: Date,
 		private readonly _open: number,
 		private readonly _high: number,
 		private readonly _low: number,
 		private readonly _close: number,
 		private readonly _volume: number,
-		private readonly _stat_type: number,
+		private readonly _statType: number,
 	) {}
 
-	get token_code(): string {
-		return this._token_code;
+	get tokenCode(): string {
+		return this._tokenCode;
 	}
 
 	get time(): Date {
@@ -38,7 +38,7 @@ export class TokenCandle {
 		return this._volume;
 	}
 
-	get stat_type(): number {
-		return this._stat_type;
+	get statType(): number {
+		return this._statType;
 	}
 }
