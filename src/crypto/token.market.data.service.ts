@@ -10,6 +10,7 @@ import { TokenCandleModel } from '@prisma/client';
 import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
 import { CandleDataDto } from './dto/candle-data-dto';
 import { CRYPTO } from './constants/crypto';
+import { FindCandleRecordsDTO } from './dto/find-candle-records-dto';
 @injectable()
 export class TokenMarketDataService implements ITokenMarketDataService {
 	constructor(
@@ -67,17 +68,11 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		return result;
 	}
 
-	async findLastCandleRecordInDb(
-		tokenCode: string,
-		statType: number,
-	): Promise<TokenCandleModel | null> {
+	async findLastCandleRecordsForToken(findCandleRecordsDto: FindCandleRecordsDTO): Promise<TokenCandleModel[]> {
 		this._logger.logIfDebug('Entering findLastCandleRecordInDb service method');
-		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(tokenCode, statType);
-		if (result) {
-			this._logger.log(`Last record found:`);
-			this._logger.log(result[0]);
-			return result[0];
-		}
-		return null;
+		findCandleRecordsDto.num_records = findCandleRecordsDto.num_records ?? 100;
+		findCandleRecordsDto.candle_time_period = +findCandleRecordsDto.candle_time_period ?? 1;
+		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRecordsDto);
+		return result ?? [];
 	}
 }

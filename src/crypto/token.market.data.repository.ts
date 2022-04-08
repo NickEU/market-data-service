@@ -8,6 +8,7 @@ import { GetLiveTokenDataDTO } from './dto/get-live-token-data.dto';
 import { CandleDataDto } from './dto/candle-data-dto';
 import got from 'got';
 import { ILogger } from '../logger/logger.interface';
+import { FindCandleRecordsDTO } from './dto/find-candle-records-dto';
 
 @injectable()
 export class TokenMarketDataRepository implements ITokenMarketDataRepository {
@@ -52,11 +53,13 @@ export class TokenMarketDataRepository implements ITokenMarketDataRepository {
 		return creationResult;
 	}
 
-	async findCandleRecordsInDb(token_code: string): Promise<TokenCandleModel[] | null> {
+	async findCandleRecordsInDb({ token_code, candle_time_period, num_records } : FindCandleRecordsDTO): Promise<TokenCandleModel[] | null> {
 		this._logger.logIfDebug('Entering findCandleRecordsInDb repo method');
 		return this.prismaService.client.tokenCandleModel.findMany({
+			take: num_records,
 			where: {
 				token_code,
+				stat_type: candle_time_period,
 			},
 			orderBy: {
 				time: 'desc',

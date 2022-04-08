@@ -12,6 +12,7 @@ import { CandleDataDto } from './dto/candle-data-dto';
 import { CRYPTO } from './constants/crypto';
 import { PATHS } from './constants/paths';
 import { ERRORS } from './constants/errors';
+import { FindCandleRecordsDTO } from './dto/find-candle-records-dto';
 
 @injectable()
 export class CryptoController extends BaseController implements ICryptoController {
@@ -37,6 +38,11 @@ export class CryptoController extends BaseController implements ICryptoControlle
 				path: PATHS.TEST_LIVE_MARKET_DATA_API,
 				func: this.testLiveMarketDataApi,
 				method: 'get',
+			},
+			{
+				path: PATHS.FIND_LAST_CANDLE_RECORDS_FOR_TOKEN,
+				func: this.findLastCandleRecordsForToken,
+				method: 'post',
 			},
 		]);
 	}
@@ -104,5 +110,19 @@ export class CryptoController extends BaseController implements ICryptoControlle
 		} catch (e) {
 			next(e);
 		}
+	}
+
+	async findLastCandleRecordsForToken( 
+		{ body }: Request<{}, {}, FindCandleRecordsDTO>,
+		res: Response,
+		next: NextFunction
+	): Promise<void>  {
+		//TODO : proper stat type conversion
+		const findCandleDto = new FindCandleRecordsDTO({token_code: body.token_code, candle_time_period: body.candle_time_period, num_records: body.num_records});
+
+		const result = await this._tokenMarketDataService.findLastCandleRecordsForToken(findCandleDto);
+
+		this._logger.log(`Successfully retreived data for last ${result.length} records.`);
+		this.ok(res, result);
 	}
 }
