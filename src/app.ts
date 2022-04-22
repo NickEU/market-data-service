@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import express, { Express } from 'express';
+import cors from 'cors';
 import { Server } from 'http';
 import { ILogger } from './logger/logger.interface';
 import { injectable, inject } from 'inversify';
@@ -33,6 +34,7 @@ export class App {
 
 	useMiddleware(): void {
 		this.app.use(json());
+		this.app.use(cors());
 		const authMiddleware = new AuthMiddleware(this.configService.get(CONSTANTS.SECRET));
 		this.app.use(authMiddleware.execute.bind(authMiddleware));
 	}

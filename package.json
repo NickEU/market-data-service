@@ -26,6 +26,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "coingecko-api": "^1.0.10",
+    "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "got": "^11.8.3",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
+    "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.0.3",
     "@types/jsonwebtoken": "^8.5.6",
