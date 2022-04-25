@@ -7,4 +7,8 @@ export const ERRORS = {
 		MSG: 'Error retrieving live token data',
 		CODE: 499,
 	},
+	FAILURE_GETTING_SAVED_TOKEN_DATA: {
+		MSG: 'Error processing your request. Check your parameters and try again.',
+		CODE: 497,
+	},
 };

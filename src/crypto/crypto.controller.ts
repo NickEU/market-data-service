@@ -113,16 +113,30 @@ export class CryptoController extends BaseController implements ICryptoControlle
 		}
 	}
 
-	async findLastCandleRecordsForToken( 
+	async findLastCandleRecordsForToken(
 		{ body }: Request<{}, {}, FindCandleRecordsDTO>,
 		res: Response,
-		next: NextFunction
-	): Promise<void>  {
-		const findCandleDto = new FindCandleRecordsDTO({tokenCode: body.tokenCode, candleTimePeriod: body.candleTimePeriod, numRecords: body.numRecords});
+		next: NextFunction,
+	): Promise<void> {
+		console.dir(body);
+		const findCandleDto = new FindCandleRecordsDTO({
+			tokenCode: body.tokenCode,
+			candleTimePeriod: body.candleTimePeriod,
+			numRecords: body.numRecords,
+		});
 
 		const result = await this._tokenMarketDataService.findLastCandleRecordsForToken(findCandleDto);
-
-		this._logger.log(`Successfully retrieved data for last ${result.length} records.`);
-		this.ok(res, result);
+		if (result.length > 0) {
+			this._logger.log(`Successfully retrieved data for last ${result.length} records.`);
+			this.ok(res, result);
+		} else {
+			return next(
+				new HTTPError(
+					ERRORS.FAILURE_GETTING_SAVED_TOKEN_DATA.CODE,
+					ERRORS.FAILURE_GETTING_SAVED_TOKEN_DATA.MSG,
+					CRYPTO.CRYPTO_CONTROLLER,
+				),
+			);
+		}
 	}
 }

@@ -35,8 +35,13 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 
 	async getLiveMarketDataForToken(dto: GetLiveTokenDataDTO): Promise<CandleDataDto | null> {
 		this._logger.logIfDebug('Entering getLiveMarketDataForToken service method');
-		const result = await this._tokenMarketDataRepo.getMarketCandleData(dto);
-		return result;
+		try {
+			const result = await this._tokenMarketDataRepo.getMarketCandleData(dto);
+			return result;
+		} catch (e) {
+			this._logger.error(e);
+			return null;
+		}
 	}
 
 	async createCandleRecordInDb({
@@ -47,7 +52,7 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		this._logger.logIfDebug('Entering createCandleRecordInDb service method');
 
 		const freshCandleStats = candleData[0];
-		
+
 		const statType = HELPERS.convertCandleTimePeriodStringToEnum(candleTimePeriod);
 
 		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = freshCandleStats;
@@ -64,18 +69,31 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 			volume,
 			statType,
 		);
-		const result = await this._tokenMarketDataRepo.createCandleRecordInDb(candle);
-		return result;
+		try {
+			const result = await this._tokenMarketDataRepo.createCandleRecordInDb(candle);
+			return result;
+		} catch (e) {
+			this._logger.error(e);
+			return null;
+		}
 	}
 
-	async findLastCandleRecordsForToken(findCandleRecordsDto: FindCandleRecordsDTO): Promise<TokenCandleModel[]> {
+	async findLastCandleRecordsForToken(
+		findCandleRecordsDto: FindCandleRecordsDTO,
+	): Promise<TokenCandleModel[]> {
 		this._logger.logIfDebug('Entering findLastCandleRecordInDb service method');
 
 		const findCandleRepoParam = new FindCandleRecordsParam(findCandleRecordsDto);
 		findCandleRepoParam.numRecords = findCandleRecordsDto.numRecords ?? 100;
-		findCandleRepoParam.candleTimePeriodAsNum = +findCandleRecordsDto.candleTimePeriod ?? TokenCandleTimePeriod.ONE_MINUTE;
+		findCandleRepoParam.candleTimePeriodAsNum =
+			+findCandleRecordsDto.candleTimePeriod ?? TokenCandleTimePeriod.ONE_MINUTE;
 
-		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRepoParam);
-		return result ?? [];
+		try {
+			const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRepoParam);
+			return result ?? [];
+		} catch (e) {
+			this._logger.error(e);
+			return [];
+		}
 	}
 }

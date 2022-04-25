@@ -8,4 +8,8 @@ export const CONSTANTS = {
 	DEBUG: 'DEBUG',
 	LIVE: 'LIVE',
 	ENV: 'ENV',
+
+	//cert
+	PUBLIC_CERT: 'PUBLIC_CERT',
+	PRIVATE_KEY: 'PRIVATE_KEY',
 };
