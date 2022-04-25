@@ -47,7 +47,7 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		this._logger.logIfDebug('Entering createCandleRecordInDb service method');
 
 		const freshCandleStats = candleData[0];
-		
+
 		const statType = HELPERS.convertCandleTimePeriodStringToEnum(candleTimePeriod);
 
 		const [timeMs, openPrice, highPrice, lowPrice, closePrice, volume] = freshCandleStats;
@@ -68,12 +68,15 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		return result;
 	}
 
-	async findLastCandleRecordsForToken(findCandleRecordsDto: FindCandleRecordsDTO): Promise<TokenCandleModel[]> {
+	async findLastCandleRecordsForToken(
+		findCandleRecordsDto: FindCandleRecordsDTO,
+	): Promise<TokenCandleModel[]> {
 		this._logger.logIfDebug('Entering findLastCandleRecordInDb service method');
 
 		const findCandleRepoParam = new FindCandleRecordsParam(findCandleRecordsDto);
 		findCandleRepoParam.numRecords = findCandleRecordsDto.numRecords ?? 100;
-		findCandleRepoParam.candleTimePeriodAsNum = +findCandleRecordsDto.candleTimePeriod ?? TokenCandleTimePeriod.ONE_MINUTE;
+		findCandleRepoParam.candleTimePeriodAsNum =
+			+findCandleRecordsDto.candleTimePeriod ?? TokenCandleTimePeriod.ONE_MINUTE;
 
 		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRepoParam);
 		return result ?? [];

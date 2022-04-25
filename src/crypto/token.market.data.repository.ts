@@ -53,7 +53,11 @@ export class TokenMarketDataRepository implements ITokenMarketDataRepository {
 		return creationResult;
 	}
 
-	async findCandleRecordsInDb({ tokenCode, candleTimePeriodAsNum, numRecords } : FindCandleRecordsParam): Promise<TokenCandleModel[] | null> {
+	async findCandleRecordsInDb({
+		tokenCode,
+		candleTimePeriodAsNum,
+		numRecords,
+	}: FindCandleRecordsParam): Promise<TokenCandleModel[] | null> {
 		this._logger.logIfDebug('Entering findCandleRecordsInDb repo method');
 		return this.prismaService.client.tokenCandleModel.findMany({
 			take: numRecords,
