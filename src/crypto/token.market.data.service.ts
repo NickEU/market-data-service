@@ -35,8 +35,13 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 
 	async getLiveMarketDataForToken(dto: GetLiveTokenDataDTO): Promise<CandleDataDto | null> {
 		this._logger.logIfDebug('Entering getLiveMarketDataForToken service method');
-		const result = await this._tokenMarketDataRepo.getMarketCandleData(dto);
-		return result;
+		try {
+			const result = await this._tokenMarketDataRepo.getMarketCandleData(dto);
+			return result;
+		} catch (e) {
+			this._logger.error(e);
+			return null;
+		}
 	}
 
 	async createCandleRecordInDb({
@@ -64,8 +69,13 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 			volume,
 			statType,
 		);
-		const result = await this._tokenMarketDataRepo.createCandleRecordInDb(candle);
-		return result;
+		try {
+			const result = await this._tokenMarketDataRepo.createCandleRecordInDb(candle);
+			return result;
+		} catch (e) {
+			this._logger.error(e);
+			return null;
+		}
 	}
 
 	async findLastCandleRecordsForToken(
@@ -78,7 +88,12 @@ export class TokenMarketDataService implements ITokenMarketDataService {
 		findCandleRepoParam.candleTimePeriodAsNum =
 			+findCandleRecordsDto.candleTimePeriod ?? TokenCandleTimePeriod.ONE_MINUTE;
 
-		const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRepoParam);
-		return result ?? [];
+		try {
+			const result = await this._tokenMarketDataRepo.findCandleRecordsInDb(findCandleRepoParam);
+			return result ?? [];
+		} catch (e) {
+			this._logger.error(e);
+			return [];
+		}
 	}
 }
