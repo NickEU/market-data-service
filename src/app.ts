@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import express, { Express } from 'express';
+import https from 'https';
 import cors from 'cors';
 import { Server } from 'http';
 import { ILogger } from './logger/logger.interface';
@@ -13,6 +14,8 @@ import { CONSTANTS } from './common/constants';
 import { PrismaService } from './database/prisma.service';
 import { AuthMiddleware } from './common/auth.middleware';
 import { IScheduler } from './scheduler/scheduler.interface';
+import { tryGetSslCertificate } from './ssl';
+
 @injectable()
 export class App {
 	app: Express;
@@ -53,9 +56,32 @@ export class App {
 		this.useRoutes();
 		this.useExceptionFilters();
 		await this.prismaService.connect();
-		this.server = this.app.listen(this.port);
-		this.logger.log(`Server is running at https://localhost:${this.port}!`);
-		await this.scheduler.launchApiCaller();
+
+		this.createServer();
+
+		this.logger.log(`Server is running at http://localhost:${this.port}!`);
+		// await this.scheduler.launchApiCaller();
+	}
+
+	createServer(): void {
+		const sslLocationPrivateKey = this.configService.get(CONSTANTS.PRIVATE_KEY);
+		const sslLocationPublicCert = this.configService.get(CONSTANTS.PUBLIC_CERT);
+		const encoding: BufferEncoding = 'utf8';
+		const sslCert = tryGetSslCertificate(sslLocationPrivateKey, sslLocationPublicCert, encoding);
+
+		if (sslCert.wasFound()) {
+			const options = {
+				key: sslCert.privateKey,
+				cert: sslCert.publicCert,
+			};
+			this.server = https.createServer(options, this.app).listen(this.port);
+			this.logger.log(
+				`Successfully loaded the SSL certificate from ${sslLocationPublicCert}. Running in HTTPS mode.`,
+			);
+		} else {
+			this.logger.log(`No SSL certificate found, running in HTTP mode`);
+			this.server = this.app.listen(this.port);
+		}
 	}
 
 	public close(): void {
