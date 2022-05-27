@@ -60,7 +60,7 @@ export class App {
 		this.createServer();
 
 		this.logger.log(`Server is running at http://localhost:${this.port}!`);
-		// await this.scheduler.launchApiCaller();
+		await this.scheduler.launchApiCaller();
 	}
 
 	createServer(): void {
