@@ -5,11 +5,11 @@
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node ./dist/main.js",
+    "start": "node ./dist/src/main.js",
     "dev": "nodemon",
     "dev:inspect": "nodemon -e ts,json --exec node --inspect=localhost:9222 -r ts-node/register src/main.ts",
     "generate": "prisma generate",
-    "build": "tsc.cmd",
+    "build": "tsc",
     "lint": "eslint ./src/**",
     "lint:fix": "eslint ./src/** --fix",
     "test:clinic": "clinic doctor --on-port 'autocannon -m POST localhost:8000/users/register' -- node dist/main.js",
