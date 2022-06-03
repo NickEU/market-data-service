@@ -1,4 +1,5 @@
 export enum TokenCandleTimePeriod {
-	ONE_HOUR,
-	ONE_MINUTE,
+	ONE_MINUTE = 1,
+	ONE_HOUR = 2,
+	ONE_DAY = 3,
 }
